@@ -4,13 +4,13 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-public class ErrorOnCategoryException extends InventoryLiteException {
+public class BussinesValidationException extends InventoryLiteException {
 
     private final List<String> errors;
 
-    public ErrorOnCategoryException(List<String> errorList) {
+    public BussinesValidationException(List<String> errors) {
         super("");
-        this.errors = errorList;
+        this.errors = errors;
     }
 
     @Override
@@ -20,6 +20,7 @@ public class ErrorOnCategoryException extends InventoryLiteException {
 
     @Override
     public List<String> getErrors() {
-        return this.errors;
+        return errors;
     }
+
 }

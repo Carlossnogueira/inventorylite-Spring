@@ -4,12 +4,13 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-public class CategoryAlreadyExistsException extends InventoryLiteException {
+public class ErrorOnCreateEntityException extends InventoryLiteException {
+
     private final List<String> errors;
 
-    public CategoryAlreadyExistsException() {
+    public ErrorOnCreateEntityException(List<String> errorList) {
         super("");
-        this.errors = List.of("Category already exists");
+        this.errors = errorList;
     }
 
     @Override
@@ -21,4 +22,5 @@ public class CategoryAlreadyExistsException extends InventoryLiteException {
     public List<String> getErrors() {
         return this.errors;
     }
+
 }
