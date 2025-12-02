@@ -9,5 +9,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class CreateCategorySuccessJson {
+    
+    private int id;
     private String name;
 }

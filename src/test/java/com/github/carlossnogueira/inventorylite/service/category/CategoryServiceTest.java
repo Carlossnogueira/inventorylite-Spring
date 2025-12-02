@@ -7,9 +7,11 @@ import com.github.carlossnogueira.inventorylite.domain.dto.request.CreateCategor
 import com.github.carlossnogueira.inventorylite.domain.dto.response.CreateCategorySuccessJson;
 import com.github.carlossnogueira.inventorylite.domain.entities.Category;
 import com.github.carlossnogueira.inventorylite.domain.repositories.ICategoryRepository;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -17,140 +19,198 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Optional;
+
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceTest {
 
-    @InjectMocks
-    private CategoryService service;
+        @InjectMocks
+        private CategoryService service;
 
-    @Mock
-    private ICategoryRepository repository;
+        @Mock
+        private ICategoryRepository repository;
 
-    @Test
-    @DisplayName("Should create category successfully")
-    void shouldCreateCategorySuccessfully(){
+        // -------------------------------------------------------------
+        // CREATE
+        // -------------------------------------------------------------
+        @Test
+        @DisplayName("Should create category successfully")
+        void shouldCreateCategorySuccessfully() {
 
-        CreateCategoryJson request = new CreateCategoryJson("Food");
-        Mockito.when(repository.existsByName("Food")).thenReturn(false);
+                CreateCategoryJson request = new CreateCategoryJson("Food");
 
-        CreateCategorySuccessJson response = service.create(request);
+                Mockito.when(repository.existsByName("Food"))
+                                .thenReturn(false);
 
-        assertEquals("Food", response.getName());
+                assertDoesNotThrow(() -> service.create(request));
 
-        Mockito.verify(repository, Mockito.times(1))
-                .saveAndFlush(Mockito.any(Category.class));
-    }
+                Mockito.verify(repository, Mockito.times(1))
+                                .saveAndFlush(Mockito.any(Category.class));
+        }
 
-    @Test
-    @DisplayName("Should throw Exception when category already exists")
-    void shouldThrowExceptionWhenCategoryAlreadyExists() {
+        @Test
+        @DisplayName("Should throw Exception when category already exists")
+        void shouldThrowExceptionWhenCategoryAlreadyExists() {
 
-        CreateCategoryJson request = new CreateCategoryJson("Food");
+                CreateCategoryJson request = new CreateCategoryJson("Food");
 
-        Mockito.when(repository.existsByName("Food")).thenReturn(true);
+                Mockito.when(repository.existsByName("Food"))
+                                .thenReturn(true);
 
+                assertThrows(
+                                CategoryAlreadyExistsException.class,
+                                () -> service.create(request));
 
-        assertThrows(
-                CategoryAlreadyExistsException.class,
-                () -> service.create(request)
-        );
+                Mockito.verify(repository, Mockito.never())
+                                .saveAndFlush(Mockito.any());
+        }
 
-        Mockito.verify(repository, Mockito.never())
-                .saveAndFlush(Mockito.any());
-    }
+        // -------------------------------------------------------------
+        // DELETE BY NAME
+        // -------------------------------------------------------------
+        @Test
+        @DisplayName("Should delete category when it exists")
+        void shouldDeleteCategoryWhenExists() {
 
-    @Test
-    @DisplayName("Should delete category when it exists")
-    void shouldDeleteCategoryWhenExists() {
+                Category category = new Category();
+                category.setName("Toys");
 
-        Category category = new Category();
-        category.setName("Toys");
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.of(category));
 
-        Mockito.when(repository.findByName("Toys"))
-                .thenReturn(category);
+                service.deleteByName("Toys");
 
-        service.deleteByEmail("Toys");
+                Mockito.verify(repository, Mockito.times(1))
+                                .deleteByName("Toys");
+        }
 
-        Mockito.verify(repository, Mockito.times(1))
-                .deleteByName("Toys");
-    }
+        @Test
+        @DisplayName("Should throw NotFoundException when category does not exist")
+        void shouldThrowExceptionWhenCategoryDoesNotExist() {
 
-    @Test
-    @DisplayName("Should throw NotFoundException when category does not exist")
-    void shouldThrowExceptionWhenCategoryDoesNotExist() {
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.empty());
 
-        Mockito.when(repository.findByName("Toys"))
-                .thenReturn(null);
+                assertThrows(NotFoundException.class,
+                                () -> service.deleteByName("Toys"));
 
-        assertThrows(NotFoundException.class,
-                () -> service.deleteByEmail("Toys"));
+                Mockito.verify(repository, Mockito.never())
+                                .deleteByName(Mockito.anyString());
+        }
 
-        Mockito.verify(repository, Mockito.never())
-                .deleteByName(Mockito.anyString());
-    }
+        // -------------------------------------------------------------
+        // DELETE BY ID
+        // -------------------------------------------------------------
+        @Test
+        @DisplayName("Should delete category by ID when it exists")
+        void shouldDeleteCategoryByIdWhenExists() {
 
-    @Test
-    @DisplayName("Should update category when it exists")
-    void shouldUpdateCategoryWhenExists() {
+                Category category = new Category();
+                category.setId(10);
+                category.setName("Sports");
 
-        Category category = new Category();
-        category.setName("Toys");
+                Mockito.when(repository.findById(10))
+                                .thenReturn(Optional.of(category));
 
-        CreateCategoryJson request = new CreateCategoryJson("Devices");
+                service.deleteById(10);
 
+                Mockito.verify(repository, Mockito.times(1))
+                                .deleteById(10);
+        }
 
-        Mockito.when(repository.findByName("Toys"))
-                .thenReturn(category);
+        @Test
+        @DisplayName("Should throw NotFoundException when deleting by ID and category not found")
+        void shouldThrowExceptionWhenDeletingByIdNotFound() {
 
+                Mockito.when(repository.findById(10))
+                                .thenReturn(Optional.empty());
 
-        CreateCategorySuccessJson response = service.update("Toys", request);
+                assertThrows(NotFoundException.class,
+                                () -> service.deleteById(10));
 
-        Mockito.verify(repository, Mockito.times(1))
-                .findByName("Toys");
+                Mockito.verify(repository, Mockito.never())
+                                .deleteById(Mockito.anyInt());
+        }
 
-        assertEquals("Devices", category.getName());
+        // -------------------------------------------------------------
+        // UPDATE
+        // -------------------------------------------------------------
+        @Test
+        @DisplayName("Should update category when it exists")
+        void shouldUpdateCategoryWhenExists() {
 
-        Mockito.verify(repository, Mockito.times(1))
-                .saveAndFlush(category);
+                Category category = new Category();
+                category.setId(1);
+                category.setName("Toys");
 
-        assertEquals("Devices", response.getName());
-    }
+                CreateCategoryJson request = new CreateCategoryJson("Devices");
 
-    @Test
-    @DisplayName("Should get a category by name")
-    void shouldGetACategoryByName() {
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.of(category));
 
-        Category category = new Category();
-        category.setName("Toys");
+                CreateCategorySuccessJson response = service.update("Toys", request);
 
-        Mockito.when(repository.findByName("Toys"))
-                .thenReturn(category);
+                Mockito.verify(repository, Mockito.times(1))
+                                .findByName("Toys");
 
-        CreateCategorySuccessJson result = service.searchByName("Toys");
+                assertEquals("Devices", category.getName());
 
-        assertEquals("Toys", result.getName());
+                Mockito.verify(repository, Mockito.times(1))
+                                .saveAndFlush(category);
 
-        Mockito.verify(repository, Mockito.times(1))
-                .findByName("Toys");
-    }
+                assertEquals("Devices", response.getName());
+        }
 
-    @Test
-    @DisplayName("Should throw error when category is not found")
-    void shouldThrowWhenCategoryNotFound() {
+        @Test
+        @DisplayName("Should throw NotFoundException when updating non-existing category")
+        void shouldThrowExceptionWhenUpdatingNotFound() {
 
-        Mockito.when(repository.findByName("Toys"))
-                .thenReturn(null);
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.empty());
 
-        assertThrows(
-                NotFoundException.class,
-                () -> service.searchByName("Toys")
-        );
+                assertThrows(
+                                NotFoundException.class,
+                                () -> service.update("Toys", new CreateCategoryJson("Devices"))
+                );
 
-        Mockito.verify(repository, Mockito.times(1))
-                .findByName("Toys");
-    }
+                Mockito.verify(repository, Mockito.never())
+                                .saveAndFlush(Mockito.any());
+        }
 
+        // -------------------------------------------------------------
+        // SEARCH
+        // -------------------------------------------------------------
+        @Test
+        @DisplayName("Should get a category by name")
+        void shouldGetACategoryByName() {
 
+                Category category = new Category();
+                category.setId(1);
+                category.setName("Toys");
 
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.of(category));
 
+                CreateCategorySuccessJson result = service.searchByName("Toys");
+
+                assertEquals("Toys", result.getName());
+
+                Mockito.verify(repository, Mockito.times(1))
+                                .findByName("Toys");
+        }
+
+        @Test
+        @DisplayName("Should throw error when category is not found")
+        void shouldThrowWhenCategoryNotFound() {
+
+                Mockito.when(repository.findByName("Toys"))
+                                .thenReturn(Optional.empty());
+
+                assertThrows(
+                                NotFoundException.class,
+                                () -> service.searchByName("Toys"));
+
+                Mockito.verify(repository, Mockito.times(1))
+                                .findByName("Toys");
+        }
 }

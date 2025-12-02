@@ -3,7 +3,11 @@ package com.github.carlossnogueira.inventorylite.api.controller;
 import com.github.carlossnogueira.inventorylite.api.application.service.Category.CategoryService;
 import com.github.carlossnogueira.inventorylite.domain.dto.request.CreateCategoryJson;
 import com.github.carlossnogueira.inventorylite.domain.dto.response.CreateCategorySuccessJson;
+
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,9 +19,9 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<CreateCategorySuccessJson> createCategory(@RequestBody CreateCategoryJson request){
-        var result = categoryService.create(request);
-        return ResponseEntity.status(201).body(result);
+    public ResponseEntity<Void> createCategory(@Valid @RequestBody CreateCategoryJson request){
+        categoryService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @GetMapping
@@ -26,15 +30,15 @@ public class CategoryController {
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping("/{name}")
+    @DeleteMapping()
     public ResponseEntity<Void> delete(@PathVariable String name) {
-        categoryService.deleteByEmail(name);
+        categoryService.deleteByName(name);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping
     public ResponseEntity<CreateCategorySuccessJson> updateByName(
-            @RequestBody CreateCategoryJson request,
+            @Valid @RequestBody CreateCategoryJson request,
             @RequestParam String name){
         var result = categoryService.update(name, request);
         return ResponseEntity.ok().body(result);
