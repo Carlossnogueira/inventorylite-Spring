@@ -1,0 +1,114 @@
+package com.github.carlossnogueira.inventorylite.service.product;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Description;
+
+import com.github.carlossnogueira.inventorylite.api.application.service.Product.ProductService;
+import com.github.carlossnogueira.inventorylite.api.exception.BussinesValidationException;
+import com.github.carlossnogueira.inventorylite.domain.dto.request.CreateProductJson;
+import com.github.carlossnogueira.inventorylite.domain.entities.Category;
+import com.github.carlossnogueira.inventorylite.domain.entities.Product;
+import com.github.carlossnogueira.inventorylite.domain.repositories.ICategoryRepository;
+import com.github.carlossnogueira.inventorylite.domain.repositories.IProductRepository;
+
+@ExtendWith(MockitoExtension.class)
+public class ProductServiceTest {
+
+    @InjectMocks
+    private ProductService service;
+
+    @Mock
+    private ICategoryRepository categoryRepository;
+
+    @Mock
+    private IProductRepository productRepository;
+
+    // -------------------------------------------------------------
+    // CREATE
+    // -------------------------------------------------------------
+    @Test
+    @DisplayName("Should create product successfully")
+    void shouldCreateProductSuccessfully() {
+
+        CreateProductJson product = new CreateProductJson("Apple", 1.25, 12, 2);
+
+        Category category = new Category();
+        category.setId(2);
+
+        Mockito.when(productRepository.existsByName("Apple")).thenReturn(false);
+        Mockito.when(categoryRepository.findById(2)).thenReturn(Optional.of(category));
+
+        assertDoesNotThrow(() -> service.create(product));
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .existsByName("Apple");
+
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .findById(2);
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .saveAndFlush(Mockito.any(Product.class));
+    }
+
+    // -------------------------------------------------------------
+    // DELETE BY ID
+    // -------------------------------------------------------------
+    @Test
+    @DisplayName("Should delete product when it exists")
+    void shouldDeleteProductWhenItExists() {
+
+        Product product = new Product(
+                10L, "Apple", 2.50, 15, LocalDateTime.now(), 3, new Category());
+
+        Mockito.when(productRepository.findById(10L))
+                .thenReturn(Optional.of(product));
+
+        assertDoesNotThrow(() -> service.deleteById(10L));
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .findById(10L);
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .delete(product);
+    }
+
+
+    @Test
+    @DisplayName("Should throw BussinesValidationException when product does not exist by id")
+    void shouldThrowBussinessExceptionWhenProductDoesNotExistById() {
+
+        Mockito.when(productRepository.findById(10L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                BussinesValidationException.class,
+                () -> service.deleteById(10L));
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .findById(10L);
+
+        Mockito.verify(productRepository, Mockito.never())
+                .delete(Mockito.any());
+    }
+
+    // -------------------------------------------------------------
+    // UPDATE
+    // -------------------------------------------------------------
+
+    // -------------------------------------------------------------
+    // SEARCH
+    // -------------------------------------------------------------
+
+}
