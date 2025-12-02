@@ -25,7 +25,7 @@ import com.github.carlossnogueira.inventorylite.domain.dto.response.CreateProduc
 
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("products")
 @AllArgsConstructor
 public class ProductController {
   
