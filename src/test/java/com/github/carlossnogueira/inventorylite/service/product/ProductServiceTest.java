@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Description;
 
 import com.github.carlossnogueira.inventorylite.api.application.service.Product.ProductService;
 import com.github.carlossnogueira.inventorylite.api.exception.BussinesValidationException;
+import com.github.carlossnogueira.inventorylite.api.exception.ProductException.ProductAlreadyExistsException;
 import com.github.carlossnogueira.inventorylite.domain.dto.request.CreateProductJson;
 import com.github.carlossnogueira.inventorylite.domain.entities.Category;
 import com.github.carlossnogueira.inventorylite.domain.entities.Product;
@@ -60,6 +61,32 @@ public class ProductServiceTest {
 
         Mockito.verify(productRepository, Mockito.times(1))
                 .saveAndFlush(Mockito.any(Product.class));
+    }
+
+    @Test
+    @DisplayName("Should throw ProductAlreadyExistsException when product already exists")
+    void shouldThrowProductAlreadyExistsExceptionWhenProductAlreadyExists() {
+
+        CreateProductJson product = new CreateProductJson("Apple", 1.25, 12, 2);
+
+        Category category = new Category();
+        category.setId(2);
+
+        Mockito.when(productRepository.existsByName("Apple")).thenReturn(true);
+        Mockito.when(categoryRepository.findById(2)).thenReturn(Optional.of(category));
+
+        assertThrows(
+                ProductAlreadyExistsException.class,
+                () -> service.create(product));
+
+        Mockito.verify(productRepository, Mockito.times(1))
+                .existsByName("Apple");
+
+        Mockito.verify(categoryRepository, Mockito.times(1))
+                .findById(2);
+
+        Mockito.verify(productRepository, Mockito.never())
+                .saveAndFlush(Mockito.any());
     }
 
     // -------------------------------------------------------------
