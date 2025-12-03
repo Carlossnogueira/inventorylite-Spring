@@ -19,7 +19,7 @@ public class CategoryService {
 
     public void create(CreateCategoryJson request) {
 
-        if(repository.existsByName(request.getName())){
+        if (repository.existsByName(request.getName())) {
             throw new CategoryAlreadyExistsException();
         }
 
