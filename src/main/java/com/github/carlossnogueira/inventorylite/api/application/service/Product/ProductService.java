@@ -121,10 +121,6 @@ public class ProductService {
             product.setPrice(updatedData.getPrice());
         }
 
-        if (updatedData.getQuantity() != null) {
-            product.setQuantity(updatedData.getQuantity());
-        }
-
         product.setUpdatedAt(LocalDateTime.now());
 
         productRepository.saveAndFlush(product);

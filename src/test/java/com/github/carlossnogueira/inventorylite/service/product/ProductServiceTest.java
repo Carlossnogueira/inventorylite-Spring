@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Description;
 
 import com.github.carlossnogueira.inventorylite.api.application.service.Product.ProductService;
 import com.github.carlossnogueira.inventorylite.api.exception.BussinesValidationException;

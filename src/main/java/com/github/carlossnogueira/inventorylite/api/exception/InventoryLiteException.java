@@ -1,7 +1,5 @@
 package com.github.carlossnogueira.inventorylite.api.exception;
 
-import org.springframework.http.HttpStatus;
-
 import java.util.List;
 
 public abstract class InventoryLiteException extends RuntimeException{

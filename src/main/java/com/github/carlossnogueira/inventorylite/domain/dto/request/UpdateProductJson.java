@@ -17,8 +17,5 @@ public class UpdateProductJson {
     private Double price;
 
     @Positive
-    private Integer quantity;
-
-    @Positive
     private Integer categoryId;
 }

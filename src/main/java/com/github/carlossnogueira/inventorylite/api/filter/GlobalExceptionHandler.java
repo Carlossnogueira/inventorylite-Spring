@@ -2,7 +2,6 @@ package com.github.carlossnogueira.inventorylite.api.filter;
 
 import com.github.carlossnogueira.inventorylite.api.exception.InventoryLiteException;
 import com.github.carlossnogueira.inventorylite.domain.dto.response.ErrorOnValidationJson;
-import com.github.carlossnogueira.inventorylite.domain.dto.response.FieldErrorJson;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
