@@ -15,6 +15,8 @@ import com.github.carlossnogueira.inventorylite.domain.entities.Product;
 import com.github.carlossnogueira.inventorylite.domain.repositories.ICategoryRepository;
 import com.github.carlossnogueira.inventorylite.domain.repositories.IProductRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Service
 public class ProductService {
 
@@ -26,22 +28,27 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public void create(CreateProductJson request) {
-        boolean productExists = productRepository.existsByName(request.getName());
+    public void create(CreateProductJson categoryRequest, HttpServletRequest request) {
+        boolean productExists = productRepository.existsByName(categoryRequest.getName());
 
-        Category category = categoryRepository.findById(request.getCategoryId())
+        Category category = categoryRepository.findById(categoryRequest.getCategoryId())
                 .orElseThrow(() -> new BussinesValidationException(List.of("Category doesn't exist")));
 
         if (productExists)
             throw new ProductAlreadyExistsException();
 
+        var userId = request.getAttribute("user_id").toString();
+
+        Long createdBy = Long.parseLong(userId);
+
         Product product = Product.builder()
-                .name(request.getName())
+                .name(categoryRequest.getName())
                 .category(category)
                 .categoryId(category.getId())
-                .quantity(request.getQuantity())
-                .price(request.getPrice())
+                .quantity(categoryRequest.getQuantity())
+                .price(categoryRequest.getPrice())
                 .updatedAt(LocalDateTime.now())
+                .createdBy(createdBy)
                 .build();
 
         productRepository.saveAndFlush(product);
@@ -98,7 +105,6 @@ public class ProductService {
 
         productRepository.delete(product);
     }
-
 
     public CreateProductSuccessJson update(Long id, UpdateProductJson updatedData) {
 

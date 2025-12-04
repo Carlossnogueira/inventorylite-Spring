@@ -9,30 +9,34 @@ import com.github.carlossnogueira.inventorylite.domain.dto.response.CreateCatego
 import com.github.carlossnogueira.inventorylite.domain.entities.Category;
 import com.github.carlossnogueira.inventorylite.domain.repositories.ICategoryRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class CategoryService {
 
     private final ICategoryRepository repository;
 
-    public void create(CreateCategoryJson request) {
+    public void create(CreateCategoryJson categoryRequest, HttpServletRequest req) {
 
-        if (repository.existsByName(request.getName())) {
+        if (repository.existsByName(categoryRequest.getName())) {
             throw new CategoryAlreadyExistsException();
         }
 
+        var id = Long.parseLong(req.getAttribute("user_id").toString());
+
         Category category = Category.builder()
-                .name(request.getName())
+                .name(categoryRequest.getName())
+                .createdBy(id)
                 .build();
 
         repository.saveAndFlush(category);
     }
 
-    public CreateCategorySuccessJson update(String name, CreateCategoryJson category) {
+    public CreateCategorySuccessJson update(int id, CreateCategoryJson category) {
 
-        Category categoryEntity = repository.findByName(name)
+        Category categoryEntity = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found."));
 
         if (category.getName() != null) {

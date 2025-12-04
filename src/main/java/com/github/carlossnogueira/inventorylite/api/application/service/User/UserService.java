@@ -2,6 +2,8 @@ package com.github.carlossnogueira.inventorylite.api.application.service.User;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.github.carlossnogueira.inventorylite.api.exception.BussinesValidationException;
@@ -20,6 +22,8 @@ public class UserService {
 
     private final IUserRepository userRepository;
 
+    private PasswordEncoder passwordEncoder;
+
     public void create(CreateUserJson request) {
         boolean userExists = userRepository.existsByEmail(request.getEmail());
 
@@ -27,10 +31,12 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
+        String encryptedPassword = passwordEncoder.encode(request.getPassword());
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(encryptedPassword)
                 .userIdentifier("")
                 .build();
 

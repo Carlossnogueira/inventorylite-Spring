@@ -15,7 +15,6 @@ import java.util.List;
 @Builder
 public class Category {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -24,6 +23,9 @@ public class Category {
     private String name;
 
     private LocalDateTime createdAt;
+
+    @Column(name = "created_by")
+    private Long createdBy;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();

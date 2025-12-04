@@ -8,5 +8,6 @@ import com.github.carlossnogueira.inventorylite.domain.entities.User;
 
 public interface IUserRepository extends JpaRepository<User,Long> {
     boolean existsByEmail(String email);
+    
     Optional<User> findByEmail(String email);
 }

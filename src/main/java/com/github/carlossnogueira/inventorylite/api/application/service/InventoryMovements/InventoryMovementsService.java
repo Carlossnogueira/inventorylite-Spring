@@ -13,6 +13,8 @@ import com.github.carlossnogueira.inventorylite.domain.entities.enums.Type;
 import com.github.carlossnogueira.inventorylite.domain.repositories.IInventoryMovements;
 import com.github.carlossnogueira.inventorylite.domain.repositories.IProductRepository;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Service
 public class InventoryMovementsService {
 
@@ -25,16 +27,17 @@ public class InventoryMovementsService {
         this.productRepository = productRepository;
     }
 
-    public void create(CreateInventoryMovementsJson request) {
-        Product product = productRepository.findById(request.getProductId())
+    public void create(CreateInventoryMovementsJson productRequest, HttpServletRequest request) {
+        Product product = productRepository.findById(productRequest.getProductId())
                 .orElseThrow(() -> new BussinesValidationException(List.of("Product doesn't exist")));
 
-        int reqQuantity = request.getQuantity();
+       
+        int reqQuantity = productRequest.getQuantity();
         int total = reqQuantity + product.getQuantity();
-        int minus = product.getQuantity() - request.getQuantity();
+        int minus = product.getQuantity() - productRequest.getQuantity();
 
 
-        if (request.getType() == Type.IN) {
+        if (productRequest.getType() == Type.IN) {
             if (reqQuantity <= 0 || reqQuantity > 9999 || total > 9999) {
                 throw new BussinesValidationException(List.of("Invalid quantity"));
             }
@@ -42,9 +45,9 @@ public class InventoryMovementsService {
             product.setQuantity(product.getQuantity() + reqQuantity);
         }
 
-        if(request.getType() == Type.OUT){
+        if(productRequest.getType() == Type.OUT){
             if(minus < 0 || reqQuantity > 9999 ){
-                throw new BussinesValidationException(List.of("This product have " + product.getQuantity() + " and you quanto to remove " + request.getQuantity()));
+                throw new BussinesValidationException(List.of("This product have " + product.getQuantity() + " and you quanto to remove " + productRequest.getQuantity()));
             }
 
            product.setQuantity(product.getQuantity() - reqQuantity);
@@ -52,12 +55,17 @@ public class InventoryMovementsService {
 
         productRepository.saveAndFlush(product);
 
+        var userId = request.getAttribute("user_id").toString();
+
+        Long movedBy = Long.parseLong(userId);
+
         InventoryMovements movement = InventoryMovements.builder()
                 .productId(product.getId())
                 .product(product)
-                .quantity(request.getQuantity())
-                .type(request.getType())
-                .description(request.getDescription())
+                .quantity(productRequest.getQuantity())
+                .type(productRequest.getType())
+                .description(productRequest.getDescription())
+                .movedBy(movedBy)
                 .build();
 
         inventoryMovementsRepository.saveAndFlush(movement);

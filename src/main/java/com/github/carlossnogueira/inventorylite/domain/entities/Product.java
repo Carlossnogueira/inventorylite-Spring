@@ -37,7 +37,7 @@ public class Product {
 
     @NotNull
     private int quantity;
-    
+
     private LocalDateTime updatedAt;
 
     @NotNull
@@ -47,5 +47,8 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false,updatable = false)
     private Category category;
+
+    @Column(name = "created_by")
+    private Long createdBy;
 
 }

@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import com.github.carlossnogueira.inventorylite.api.application.service.Inventor
 import com.github.carlossnogueira.inventorylite.domain.dto.request.CreateInventoryMovementsJson;
 import com.github.carlossnogueira.inventorylite.domain.dto.response.CreateInventoryMovementsSuccessJson;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
@@ -25,19 +27,19 @@ public class InventoryMovementsController {
     private final InventoryMovementsService service;
 
     @PostMapping()
-    public ResponseEntity<Void> create(@Valid @RequestBody CreateInventoryMovementsJson request) {
-        service.create(request);
+    public ResponseEntity<Void> create(@Valid @RequestBody CreateInventoryMovementsJson movementRequest, HttpServletRequest request) {
+        service.create(movementRequest, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping()
-    public ResponseEntity<CreateInventoryMovementsSuccessJson> getById(@RequestParam Long id) {
+    @GetMapping("{/id}")
+    public ResponseEntity<CreateInventoryMovementsSuccessJson> getById(@PathVariable Long id) {
         var result = service.searchById(id);
         return ResponseEntity.ok().body(result);
     }
 
-    @DeleteMapping()
-    public ResponseEntity<Void> deleteById(@RequestParam Long id) {
+    @DeleteMapping("{/id}")
+    public ResponseEntity<Void> deleteById(@PathVariable  Long id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }

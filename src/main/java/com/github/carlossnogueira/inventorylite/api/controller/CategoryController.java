@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @RequestMapping("category")
 @AllArgsConstructor
@@ -19,8 +21,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<Void> createCategory(@Valid @RequestBody CreateCategoryJson request){
-        categoryService.create(request);
+    public ResponseEntity<Void> createCategory(@Valid @RequestBody CreateCategoryJson category, HttpServletRequest request){
+        categoryService.create(category, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -36,11 +38,11 @@ public class CategoryController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping
-    public ResponseEntity<CreateCategorySuccessJson> updateByName(
+    @PutMapping("{id}")
+    public ResponseEntity<CreateCategorySuccessJson> updateById(
             @Valid @RequestBody CreateCategoryJson request,
-            @RequestParam String name){
-        var result = categoryService.update(name, request);
+            @PathVariable int id){
+        var result = categoryService.update(id, request);
         return ResponseEntity.ok().body(result);
     }
 
